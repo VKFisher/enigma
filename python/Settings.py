@@ -4,7 +4,7 @@
 # Enigma machine settings
 
 # folders
-ROTOR_DIR = r'./rotors'
+ROTOR_DIR = r'rotors'
 
 # letters supported by the machine
 LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'

@@ -7,7 +7,6 @@ import logging
 
 from Settings import *
 
-
 logging.basicConfig(level=logging.DEBUG, format=' %(asctime)s - %(levelname)s - %(message)s')
 logging.disable(logging.DEBUG)
 
@@ -18,9 +17,21 @@ class EnigmaMachine:
     _plugboard = {}
     _reflector = None
 
-    def __init__(self, rotors, rotor_positions, ring_settings, reflector, plugboard_settings=None):
-        self.change_settings(rotors=rotors, rotor_positions=rotor_positions, ring_settings=ring_settings,
-                             plugboard_settings=plugboard_settings, reflector=reflector)
+    def __init__(
+            self,
+            rotors,
+            rotor_positions,
+            ring_settings,
+            reflector,
+            plugboard_settings=None
+    ):
+        self.change_settings(
+            rotors=rotors,
+            rotor_positions=rotor_positions,
+            ring_settings=ring_settings,
+            plugboard_settings=plugboard_settings,
+            reflector=reflector
+        )
 
     def change_settings(self, rotors=None, rotor_positions=None, ring_settings=None,
                         reflector=None, plugboard_settings=None):
@@ -52,7 +63,7 @@ class EnigmaMachine:
             assert len(reflector) == len(LETTERS)
             self._reflector = {LETTERS[i]: reflector[i] for i in range(len(LETTERS))}
 
-    def encrypt_message(self, message):
+    def _process_message(self, message):
         encrypted_message = []
 
         # set initial rotor positions
@@ -64,6 +75,9 @@ class EnigmaMachine:
                 encrypted_message.append(self.encrypt_letter(letter))
 
         return ''.join(encrypted_message)
+
+    encrypt_message = _process_message
+    decrypt_message = _process_message
 
     def encrypt_letter(self, letter):
         encrypted_letter = letter
@@ -80,8 +94,8 @@ class EnigmaMachine:
             # this time it will rotate again independend of rotor #3
             if \
                     rotor.rotate_next or \
-                    (rotor == self._rotors[2] and
-                     self._rotors[1].position - self._rotors[1].rotate_next_trigger_position == -1):
+                            (rotor == self._rotors[2] and
+                             self._rotors[1].position - self._rotors[1].rotate_next_trigger_position == -1):
                 continue
             else:
                 break
@@ -161,7 +175,7 @@ class Rotor:
         self.number = 0
         for i in range(len(ROTORS)):
             if rotor_settings[0] == ROTORS[i][0]:
-                self.number = i+1
+                self.number = i + 1
 
         # set up rotor wiring connections
         self._connections = {LETTERS[i]: rotor_settings[0][i] for i in range(len(LETTERS))}
@@ -209,16 +223,18 @@ class Rotor:
 
 
 if __name__ == "__main__":
-    enigma = EnigmaMachine(rotors=[Rotor(ROTOR_2_SETTINGS), Rotor(ROTOR_4_SETTINGS), Rotor(ROTOR_5_SETTINGS)],
-                           rotor_positions='BLA',
-                           ring_settings=[LETTERS[1], LETTERS[20], LETTERS[11]],
-                           plugboard_settings='AV BS CG DL FU HZ IN KM OW RX'.split(),
-                           reflector=REFLECTOR_B_SETTINGS)
+    enigma = EnigmaMachine(
+        rotors=[Rotor(ROTOR_2_SETTINGS), Rotor(ROTOR_4_SETTINGS), Rotor(ROTOR_5_SETTINGS)],
+        rotor_positions='BLA',
+        ring_settings=[LETTERS[1], LETTERS[20], LETTERS[11]],
+        plugboard_settings='AV BS CG DL FU HZ IN KM OW RX'.split(),
+        reflector=REFLECTOR_B_SETTINGS
+    )
 
-    testmessage = 'AAAAAA'
+    # testmessage = 'AAAAAA'
     testmessage = 'EDPUD NRGYS ZRCXN UYTPO MRMBO FKTBZ REZKM LXLVE FGUEY SIOZV EQMIK UBPMM YLKLT TDEIS MDICA GYKUA ' \
                   'CTCDO MOHWX MUUIA UBSTS LRNBZ SZWNR FXWFY SSXJZ VIJHI DISHP RKLKA YUPAD TXQSP INQMA TLPIF SVKDA ' \
                   'SCTAC DPBOP VHJK'
     logging.info(f'Encrypting message: {testmessage}')
-    result = enigma.encrypt_message(testmessage)
+    result = enigma._process_message(testmessage)
     logging.info(f'Result: {" ".join(result.split("X"))}')
