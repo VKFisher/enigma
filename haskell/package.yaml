@@ -1,6 +1,6 @@
-name:                haskell
+name:                enigma
 version:             0.1.0.0
-github:              "Github username here/haskell"
+github:              "Github username here/enigma"
 license:             BSD3
 author:              "Author name here"
 maintainer:          "Author email here"
@@ -26,7 +26,7 @@ library:
   source-dirs: src
 
 executables:
-  haskell-exe:
+  enigma-exe:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
@@ -34,10 +34,10 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - haskell
+    - enigma
 
 tests:
-  haskell-test:
+  enigma-test:
     main:                Spec.hs
     source-dirs:         test
     ghc-options:
@@ -45,4 +45,4 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - haskell
+    - enigma

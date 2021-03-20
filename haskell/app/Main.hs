@@ -1,6 +1,6 @@
 module Main where
 
-import Lib
+import Enigma
 
 main :: IO ()
 main = someFunc
