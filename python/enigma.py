@@ -1,14 +1,13 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
-
 # An implementation of the Enigma encryption machine
 
 import logging
 
-from Settings import *
+from settings import *
 
 logging.basicConfig(level=logging.DEBUG, format=' %(asctime)s - %(levelname)s - %(message)s')
 logging.disable(logging.DEBUG)
+
+logger = logging.getLogger('enigma')
 
 
 class EnigmaMachine:
@@ -89,15 +88,14 @@ class EnigmaMachine:
             rotor.rotate()
 
             logging.debug(f'Rotated rotor #{count}')
+
             # double step handlng
             # if rotor #2 was rotated into its turnover position on the previous iteration
             # this time it will rotate again independend of rotor #3
-            if \
-                    rotor.rotate_next or \
-                            (rotor == self._rotors[2] and
-                             self._rotors[1].position - self._rotors[1].rotate_next_trigger_position == -1):
-                continue
-            else:
+            rotor_is_second = rotor == self._rotors[2]
+            double_step_trigger = self._rotors[1].position - self._rotors[1].rotate_next_trigger_position == -1
+
+            if not (rotor.rotate_next or rotor_is_second and double_step_trigger):
                 break
 
         logging.debug(f'Rotor ring positions after rotation: '
@@ -166,23 +164,20 @@ class Rotor:
         # adjusted_rotation_position = (self.rotate_next_trigger_position + self.ring_setting) % 26
         return self.position == self.rotate_next_trigger_position
 
-    def __init__(self, rotor_settings, ring_setting='A'):
-        assert len(rotor_settings[0]) == len(LETTERS)
-        assert rotor_settings[1] in LETTERS
-        assert ring_setting in LETTERS
-
+    def __init__(self, rotor_wiring, step_trigger, ring_setting):
         # check rotor number
+
         self.number = 0
         for i in range(len(ROTORS)):
-            if rotor_settings[0] == ROTORS[i][0]:
+            if rotor_wiring == ROTORS[i].rotor_wiring:
                 self.number = i + 1
 
         # set up rotor wiring connections
-        self._connections = {LETTERS[i]: rotor_settings[0][i] for i in range(len(LETTERS))}
+        self._connections = {LETTERS[i]: rotor_wiring[i] for i in range(len(LETTERS))}
         self._connections_reversed = {value: key for key, value in self._connections.items()}
 
         # set up position that triggers the rotation of another rotor
-        self._rotate_next_trigger_position = LETTERS.index(rotor_settings[1])
+        self._rotate_next_trigger_position = LETTERS.index(step_trigger)
         self.ring_setting = ring_setting
 
         # set initial postion
@@ -224,7 +219,7 @@ class Rotor:
 
 if __name__ == "__main__":
     enigma = EnigmaMachine(
-        rotors=[Rotor(ROTOR_2_SETTINGS), Rotor(ROTOR_4_SETTINGS), Rotor(ROTOR_5_SETTINGS)],
+        rotors=[Rotor(*ROTOR_2_SETTINGS), Rotor(*ROTOR_4_SETTINGS), Rotor(*ROTOR_5_SETTINGS)],
         rotor_positions='BLA',
         ring_settings=[LETTERS[1], LETTERS[20], LETTERS[11]],
         plugboard_settings='AV BS CG DL FU HZ IN KM OW RX'.split(),
@@ -236,5 +231,6 @@ if __name__ == "__main__":
                   'CTCDO MOHWX MUUIA UBSTS LRNBZ SZWNR FXWFY SSXJZ VIJHI DISHP RKLKA YUPAD TXQSP INQMA TLPIF SVKDA ' \
                   'SCTAC DPBOP VHJK'
     logging.info(f'Encrypting message: {testmessage}')
-    result = enigma._process_message(testmessage)
+    result = enigma.encrypt_message(testmessage)
+    print(result)
     logging.info(f'Result: {" ".join(result.split("X"))}')
