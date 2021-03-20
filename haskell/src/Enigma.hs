@@ -1,6 +1,2 @@
-module Enigma
-    ( someFunc
-    ) where
+module Enigma where
 
-someFunc :: IO ()
-someFunc = putStrLn "someFunc"

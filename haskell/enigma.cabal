@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b7a992acc68a3303b46b6e80c076eb6941fcfe113ef1ec15e49df6aaf37954ae
+-- hash: 4b5ac29b61270fc3433d8454fc5641b18d2145d4a6b7206b0f7da8b5c9a149de
 
 name:           enigma
 version:        0.1.0.0
@@ -27,7 +27,7 @@ source-repository head
 
 library
   exposed-modules:
-      Enigma
+      Lib
   other-modules:
       Paths_enigma
   hs-source-dirs:
@@ -57,7 +57,7 @@ test-suite enigma-test
       test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      HUnit
+    , base >=4.7 && <5
     , enigma
-    , HUnit
   default-language: Haskell2010
