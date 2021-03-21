@@ -6,10 +6,10 @@ from validation import prep_chars, char_valid
 
 
 class Reflector:
-    def __init__(self, settings):
-        self._parse_settings(settings)
+    def __init__(self, wiring):
+        self._parse_wiring(wiring)
 
-    def _parse_settings(self, settings):
+    def _parse_wiring(self, settings):
         chars = prep_chars(settings)
 
         if invalid_chars := {
@@ -17,7 +17,7 @@ class Reflector:
             for char in chars
             if not char_valid(char)
         }:
-            raise ReflectorException(f'Invalid characters in reflector settings: {invalid_chars}')
+            raise ReflectorException(f'Invalid characters in reflector wiring settings: {invalid_chars}')
 
         if duplicate_characters := {
             char
@@ -39,7 +39,3 @@ class Reflector:
             raise ReflectorException(f'Invalid character: {char}')
 
         return self._swap_map[char.upper()]
-
-
-REFLECTOR_B = Reflector('YRUHQSLDPXNGOKMIEBFZCWVJAT')
-REFLECTOR_C = Reflector('FVPJIAOYEDRZXWGCTKUQSBNMHL')

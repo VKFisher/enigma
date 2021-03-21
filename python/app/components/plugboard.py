@@ -7,15 +7,11 @@ from validation import char_valid, prep_chars
 MAX_PAIRS = 10
 
 
-def chars_valid(symbol):
-    pass
-
-
 class Plugboard:
-    def __init__(self, settings: str):
-        self._parse_settings(settings)
+    def __init__(self, wiring: str):
+        self._parse_wiring(wiring)
 
-    def _parse_settings(self, settings):
+    def _parse_wiring(self, settings):
         pair_strings = [prep_chars(pair_string) for pair_string in settings.split()]
 
         if invalid_chars := {
@@ -24,7 +20,7 @@ class Plugboard:
             for char in pair_string
             if not char_valid(char)
         }:
-            raise PlugboardException(f'Invalid characters in plugboard settings: {invalid_chars}')
+            raise PlugboardException(f'Invalid characters in plugboard wiring settings: {invalid_chars}')
 
         if invalid_pair_strings := {
             s

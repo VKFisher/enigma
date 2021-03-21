@@ -5,7 +5,6 @@
 
 import logging
 import random
-from collections import OrderedDict
 from itertools import permutations
 from enigma import EnigmaMachine, Rotor
 

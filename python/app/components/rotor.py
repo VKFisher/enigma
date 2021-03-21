@@ -1,7 +1,94 @@
+from dataclasses import dataclass
+
+from exceptions import RotorException
 from settings import LETTERS, ROTORS
+from validation import prep_chars, char_valid
 
 
 class Rotor:
+    def __init__(self, wiring, turnovers):
+        self._wiring = wiring
+        self._turnovers = turnovers
+        self._ring_setting = 0
+        self._offset = 0
+
+    @property
+    def ring_setting(self):
+        return LETTERS[self._ring_setting]
+
+    @ring_setting.setter
+    def ring_setting(self, value):
+        char = prep_chars(value)
+
+        if not char_valid(char):
+            raise RotorException(f'Invalid ring setting: {value}')
+
+        self._ring_setting = LETTERS.index(char)
+
+    @property
+    def position(self):
+        return LETTERS[self._offset]
+
+    @position.setter
+    def position(self, value):
+        char = prep_chars(value)
+
+        if not char_valid(char):
+            raise RotorException(f'Invalid position: {value}')
+
+        self._offset = LETTERS.index(char)
+
+    def apply_forward(self, char: str) -> str:
+
+        return char
+
+    def apply_backward(self, char: str) -> str:
+
+        return char
+
+    def step(self):
+        self._offset = (self._position + 1) % 26
+
+
+@dataclass
+class RotorSet:
+    first: Rotor
+    second: Rotor
+    third: Rotor
+
+    def __post_init__(self):
+        self._rotors = [self.first, self.second, self.third]
+
+    def __getitem__(self, position):
+        return self._rotors[position]
+
+    def __len__(self):
+        return len(self._rotors)
+
+
+@dataclass
+class RotorConfig:
+    position: str
+    ring_setting: str
+
+
+@dataclass
+class RotorSetConfig:
+    first: RotorConfig
+    second: RotorConfig
+    third: RotorConfig
+
+    def __post_init__(self):
+        self._rotor_configs = [self.first, self.second, self.third]
+
+    def __getitem__(self, position):
+        return self._rotor_configs[position]
+
+    def __len__(self):
+        return len(self._rotor_configs)
+
+
+class Rotor_:
     _position = None
 
     @property

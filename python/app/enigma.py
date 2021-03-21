@@ -3,9 +3,9 @@
 import logging
 
 from components.plugboard import Plugboard
-from components.reflector import Reflector, REFLECTOR_B
-from components.rotor import Rotor
-from settings import *
+from components.reflector import Reflector
+from components.rotor import RotorSet, RotorSetConfig
+from validation import prep_chars, char_valid
 
 logging.basicConfig(level=logging.DEBUG, format=' %(asctime)s - %(levelname)s - %(message)s')
 logging.disable(logging.DEBUG)
@@ -21,54 +21,45 @@ class EnigmaMachine:
 
     def __init__(
             self,
-            rotors,
-            rotor_positions,
-            ring_settings,
+            rotors: RotorSet,
             reflector: Reflector,
             plugboard: Plugboard = Plugboard("")
     ):
         self._plugboard = plugboard
         self._reflector = reflector
-        self.change_settings(
-            rotors=rotors,
-            rotor_positions=rotor_positions,
-            ring_settings=ring_settings
-        )
+        self._rotors = rotors
 
-    def change_settings(self, rotors=None, rotor_positions=None, ring_settings=None):
-        # the convention is to count rotors from left to right
-        if rotors:
-            assert len(rotors) == 3
-            self._rotors = rotors
-
-        if rotor_positions:
-            self._initial_rotor_positions = rotor_positions
-
-        if ring_settings:
-            for i in range(len(self._rotors)):
-                self._rotors[i].ring_setting = ring_settings[i]
+    def configure_rotors(self, config: RotorSetConfig):
+        for rotor, settings in zip(self._rotors, config):
+            rotor.ring_setting = settings.ring_setting
+            rotor.position = settings.position
 
     def _process_message(self, message):
-        encrypted_message = []
-
-        # set initial rotor positions
-        for i in range(len(self._rotors)):
-            self._rotors[i].set_ring_position(self._initial_rotor_positions[i])
-
-        for letter in message.upper():
-            if letter in LETTERS:
-                encrypted_message.append(self.encrypt_letter(letter))
-
-        return ''.join(encrypted_message)
+        return ''.join([
+            self._process_char(char)
+            for char in prep_chars(message)
+            if char_valid(char)
+        ])
 
     encrypt_message = decrypt_message = _process_message
 
-    def encrypt_letter(self, letter):
-        # rotate rotors
+    def _apply_rotors_forward(self, char: str) -> str:
+        for rotor in self._rotors[::-1]:
+            char = rotor.apply_forward(char)
+
+        return char
+
+    def _apply_rotors_backward(self, char: str) -> str:
+        for rotor in self._rotors:
+            char = rotor.apply_backward(char)
+
+        return char
+
+    def _step_rotors(self):
         count = 0
         for rotor in self._rotors[::-1]:
             count += 1
-            rotor.rotate()
+            rotor.step()
 
             logging.debug(f'Rotated rotor #{count}')
 
@@ -84,41 +75,15 @@ class EnigmaMachine:
         logging.debug(f'Rotor ring positions after rotation: '
                       f'{"".join([rotor.ring_position for rotor in self._rotors])}')
 
-        # plugboard - forward
-        letter = self._plugboard.apply(letter)
+    def _process_char(self, char: str) -> str:
+        # rotate rotors
+        self._step_rotors()
 
-        # rotors - forward
-        for rotor in self._rotors[::-1]:
-            letter = rotor.scramble(letter)
+        # apply encryption steps
+        char = self._plugboard.apply(char)
+        char = self._apply_rotors_forward(char)
+        char = self._reflector.apply(char)
+        char = self._apply_rotors_backward(char)
+        char = self._plugboard.apply(char)
 
-        # reflector
-        letter = self._reflector.apply(letter)
-
-        # rotors - backward
-        for rotor in self._rotors:
-            letter = rotor.scramble(letter, reverse=True)
-
-        # plugboard - backward
-        letter = self._plugboard.apply(letter)
-
-        # get result
-        return letter
-
-
-if __name__ == "__main__":
-    enigma = EnigmaMachine(
-        rotors=[Rotor(*ROTOR_2_SETTINGS), Rotor(*ROTOR_4_SETTINGS), Rotor(*ROTOR_5_SETTINGS)],
-        rotor_positions='BLA',
-        ring_settings=[LETTERS[1], LETTERS[20], LETTERS[11]],
-        plugboard=Plugboard('AV BS CG DL FU HZ IN KM OW RX'),
-        reflector=REFLECTOR_B,
-    )
-
-    # testmessage = 'AAAAAA'
-    testmessage = 'EDPUD NRGYS ZRCXN UYTPO MRMBO FKTBZ REZKM LXLVE FGUEY SIOZV EQMIK UBPMM YLKLT TDEIS MDICA GYKUA ' \
-                  'CTCDO MOHWX MUUIA UBSTS LRNBZ SZWNR FXWFY SSXJZ VIJHI DISHP RKLKA YUPAD TXQSP INQMA TLPIF SVKDA ' \
-                  'SCTAC DPBOP VHJK'
-    logging.info(f'Encrypting message: {testmessage}')
-    result = enigma.encrypt_message(testmessage)
-    print(result)
-    logging.info(f'Result: {" ".join(result.split("X"))}')
+        return char
