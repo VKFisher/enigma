@@ -1,4 +1,6 @@
 from enigma import EnigmaMachine, Rotor
+from components.plugboard import Plugboard
+from components.reflector import REFLECTOR_B
 from settings import *
 
 
@@ -8,8 +10,8 @@ def test_message_is_decrypted():
         rotors=[Rotor(*ROTOR_2_SETTINGS), Rotor(*ROTOR_4_SETTINGS), Rotor(*ROTOR_5_SETTINGS)],
         rotor_positions='BLA',
         ring_settings=[LETTERS[1], LETTERS[20], LETTERS[11]],
-        plugboard_settings='AV BS CG DL FU HZ IN KM OW RX'.split(),
-        reflector=REFLECTOR_B_SETTINGS
+        plugboard=Plugboard('AV BS CG DL FU HZ IN KM OW RX'),
+        reflector=REFLECTOR_B,
     )
 
     input_message = 'EDPUD NRGYS ZRCXN UYTPO MRMBO FKTBZ REZKM LXLVE FGUEY SIOZV EQMIK UBPMM YLKLT TDEIS MDICA ' \
