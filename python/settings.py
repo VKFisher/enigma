@@ -9,11 +9,12 @@ ROTOR_DIR = r'rotors'
 LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
 # original rotor settings
-#              pins: ABCDEFGHIJKLMNOPQRSTUVWXYZ
 RotorSettings = namedtuple(
     typename='RotorSettings',
     field_names=('rotor_wiring', 'step_trigger', 'ring_setting')
 )
+
+#                           pins: ABCDEFGHIJKLMNOPQRSTUVWXYZ
 ROTOR_1_SETTINGS = RotorSettings('EKMFLGDQVZNTOWYHXUSPAIBRCJ', 'R', 'A')
 ROTOR_2_SETTINGS = RotorSettings('AJDKSIRUXBLHWTMCQGZNPYFVOE', 'F', 'A')
 ROTOR_3_SETTINGS = RotorSettings('BDFHJLCPRTXVZNYEIWGAKMUSQO', 'W', 'A')

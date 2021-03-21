@@ -1,19 +1,24 @@
 module ValidCharacters where
 
-import Data.Maybe (fromMaybe)
-
+import Control.Monad.Except
+import Data.Char (toUpper)
+import Exceptions (EnigmaException (..))
+import Enigma (EnigmaMonad)
 
 validCharacterList :: [Char]
-validCharacterList = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" 
+validCharacterList = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
-type ValidChar = Char
+newtype ValidChar = ValidChar Char deriving (Eq, Show, Ord)
 
-isValid :: Char -> Bool
-isValid = (`elem` validCharacterList)
+validChar :: Char -> EnigmaMonad ValidChar
+validChar c
+  | uc `elem` validCharacterList = Right $ ValidChar uc
+  | otherwise = Left $ InvalidChar c
+  where
+    uc = toUpper c
 
-validChar' :: Char -> Maybe ValidChar
-validChar' c
-  | isValid c = Just c
-  | otherwise = Nothing
-  
-validChar c = fromMaybe
+toChar :: ValidChar -> Char
+toChar (ValidChar c) = c
+
+toValidCharString :: String -> EnigmaMonad [ValidChar]
+toValidCharString = traverse validChar
