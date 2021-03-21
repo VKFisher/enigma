@@ -7,9 +7,9 @@ import logging
 import random
 from collections import OrderedDict
 from itertools import permutations
-from Enigma import EnigmaMachine, Rotor
+from enigma import EnigmaMachine, Rotor
 
-from Settings import *
+from settings import *
 
 
 def decode():
