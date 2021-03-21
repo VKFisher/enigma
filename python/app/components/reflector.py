@@ -1,8 +1,8 @@
 from collections import Counter
 
-from app.exceptions import ReflectorException
-from app.settings import LETTERS
-from app.validation import prep_chars, char_valid
+from exceptions import ReflectorException
+from settings import LETTERS
+from validation import prep_chars, char_valid
 
 
 class Reflector:

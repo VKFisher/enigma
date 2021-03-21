@@ -1,4 +1,4 @@
-from app.settings import LETTERS, ROTORS
+from settings import LETTERS, ROTORS
 
 
 class Rotor:

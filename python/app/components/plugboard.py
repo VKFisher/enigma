@@ -1,8 +1,8 @@
 from collections import Counter
 
-from app.exceptions import PlugboardException
-from app.settings import LETTERS
-from app.validation import char_valid, prep_chars
+from exceptions import PlugboardException
+from settings import LETTERS
+from validation import char_valid, prep_chars
 
 MAX_PAIRS = 10
 
