@@ -1,14 +1,14 @@
 module Common where
 
 import Data.Foldable (toList)
-import qualified Data.Set as Set
 import Data.List (nub)
+import qualified Data.Set as Set
 
 hasDuplicates :: (Ord a) => [a] -> Bool
 hasDuplicates list = length list /= length set
   where
     set = Set.fromList list
-    
+
 countOf :: (Foldable f, Eq a) => a -> f a -> Int
 countOf value = length . filter (== value) . toList
 

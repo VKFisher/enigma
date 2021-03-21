@@ -2,10 +2,9 @@
 
 module Components.PlugboardSpec where
 
-import Test.Framework
-
-import Exceptions (EnigmaException (..))
 import Components.Plugboard
+import Exceptions (EnigmaException (..))
+import Test.Framework
 import ValidCharacters
 
 test_validPlugboardIsProcessed :: IO ()
@@ -49,3 +48,12 @@ test_plugboardWithIdenticalCharacterPairsIsRejected = assertEqual expected actua
   where
     expected = Left . IdenticalCharsPair $ 'A'
     actual = plugboardFromString "AB CD AA GH IJ"
+
+test_plugboardIsAppliedCorrectly :: IO ()
+test_plugboardIsAppliedCorrectly = assertEqual expected actual
+  where
+    pgSettings = "AB CD EF"
+    inputs = "ABFGK"
+    outputs = "BAEGK"
+    expected = Right . ValidChar <$> outputs
+    actual = applyPlugboard (plugboardFromString pgSettings) . toValidChar <$> inputs
