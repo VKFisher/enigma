@@ -5,11 +5,10 @@
 
 import logging
 import random
-from collections import OrderedDict
 from itertools import permutations
-from enigma import EnigmaMachine, Rotor
+from enigma import Enigma, Rotor
 
-from settings import *
+from characters import CHARACTERS
 
 
 def decode():
@@ -20,10 +19,10 @@ if __name__ == '__main__':
     rotor_permutations = list(permutations(ROTORS, 3))
 
     random_rotors = [Rotor(setting) for setting in random.choice(rotor_permutations)]
-    random_message_key = random.choices(LETTERS, k=3)
-    random_ring_settings = random.choices(LETTERS, k=3)
+    random_message_key = random.choices(CHARACTERS, k=3)
+    random_ring_settings = random.choices(CHARACTERS, k=3)
     random_plugboard_setting = []
-    free_letters = list(LETTERS)
+    free_letters = list(CHARACTERS)
     for i in range(10):
         sample = random.sample(free_letters, 2)
         for c in sample:
@@ -35,11 +34,11 @@ if __name__ == '__main__':
     logging.info(f'Random ring setting: {random_ring_settings}')
     logging.info(f'Random plugboard setting: {random_plugboard_setting}')
 
-    enigma = EnigmaMachine(rotors=random_rotors,
-                           rotor_positions=random_message_key,
-                           ring_settings=random_ring_settings,
-                           plugboard_settings=random_plugboard_setting,
-                           reflector=REFLECTOR_B_SETTINGS)
+    enigma = Enigma(rotors=random_rotors,
+                    rotor_positions=random_message_key,
+                    ring_settings=random_ring_settings,
+                    plugboard_settings=random_plugboard_setting,
+                    reflector=REFLECTOR_B_SETTINGS)
 
     testmessage = 'AAAAAA'
     # testmessage = 'EDPUD NRGYS ZRCXN UYTPO MRMBO FKTBZ REZKM LXLVE FGUEY SIOZV EQMIK UBPMM YLKLT TDEIS MDICA GYKUA ' \
