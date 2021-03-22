@@ -1,53 +1,116 @@
+from collections import Counter
 from dataclasses import dataclass
 
 from exceptions import RotorException
-from settings import LETTERS, ROTORS
-from validation import prep_chars, char_valid
+from characters import prep_chars, char_valid, CHARACTERS
 
 
 class Rotor:
+    CHARACTER_COUNT = len(CHARACTERS)
+
     def __init__(self, wiring, turnovers):
-        self._wiring = wiring
-        self._turnovers = turnovers
         self._ring_setting = 0
         self._offset = 0
 
-    @property
-    def ring_setting(self):
-        return LETTERS[self._ring_setting]
+        self._turnovers = self._parse_turnovers(turnovers)
+        self._forward_map, self._backward_map = self._parse_wiring(wiring)
 
-    @ring_setting.setter
-    def ring_setting(self, value):
-        char = prep_chars(value)
+        self._forward_map = {i: CHARACTERS.index(char) for i, char in enumerate(wiring)}
+        self._backward_map = {i: wiring.index(char) for i, char in enumerate(CHARACTERS)}
+
+    def _parse_turnovers(self, turnovers):
+        _turnovers = prep_chars(turnovers)
+
+        if invalid_chars := {
+            char
+            for char in turnovers
+            if not char_valid(char)
+        }:
+            raise RotorException(f'Invalid characters: {invalid_chars}')
+
+        if duplicate_chars := {
+            char
+            for char, count in Counter(_turnovers).items()
+            if count > 1
+        }:
+            raise RotorException(f'Duplicate characters: {duplicate_chars}')
+
+        if len(_turnovers) > self.CHARACTER_COUNT:
+            raise RotorException(
+                f'Expected at most {self.CHARACTER_COUNT} characters in turnover settings, got {len(_turnovers)}'
+            )
+
+        return [CHARACTERS.index(char) for char in _turnovers]
+
+    def _parse_wiring(self, wiring):
+        _wiring = prep_chars(wiring)
+
+        if invalid_chars := {
+            char
+            for char in _wiring
+            if not char_valid(char)
+        }:
+            raise RotorException(f'Invalid characters in wiring settings: {invalid_chars}')
+
+        if duplicate_characters := {
+            char
+            for char, count in Counter(_wiring).items()
+            if count > 1
+        }:
+            raise RotorException(f'Duplicate characters in wiring settings: {duplicate_characters}')
+
+        if len(_wiring) != self.CHARACTER_COUNT:
+            raise RotorException(f'Expected {self.CHARACTER_COUNT} characters in wiring settings, got {len(_wiring)}')
+
+        forward_map = {i: CHARACTERS.index(char) for i, char in enumerate(_wiring)}
+        backward_map = {i: _wiring.index(char) for i, char in enumerate(CHARACTERS)}
+
+        return forward_map, backward_map
+
+    @staticmethod
+    def _char_to_index(char):
+        char = prep_chars(char)
 
         if not char_valid(char):
-            raise RotorException(f'Invalid ring setting: {value}')
+            raise RotorException(f'Invalid character: {char}')
 
-        self._ring_setting = LETTERS.index(char)
+        return CHARACTERS.index(char)
+
+    @property
+    def ring_setting(self):
+        return CHARACTERS[self._ring_setting]
 
     @property
     def position(self):
-        return LETTERS[self._offset]
+        return CHARACTERS[self._offset]
+
+    @ring_setting.setter
+    def ring_setting(self, value):
+        self._ring_setting = self._char_to_index(value)
 
     @position.setter
     def position(self, value):
-        char = prep_chars(value)
+        self._offset = self._char_to_index(value)
 
-        if not char_valid(char):
-            raise RotorException(f'Invalid position: {value}')
-
-        self._offset = LETTERS.index(char)
-
-    def apply_forward(self, char: str) -> str:
-
-        return char
-
-    def apply_backward(self, char: str) -> str:
-
-        return char
+    @property
+    def in_turnover_position(self):
+        return self._offset in self._turnovers
 
     def step(self):
-        self._offset = (self._position + 1) % 26
+        self._offset = (self._offset + 1) % self.CHARACTER_COUNT
+
+    def _apply(self, char: str, backward: bool) -> str:
+        char_index = self._char_to_index(char)
+        char_index = (char_index - self._ring_setting + self._offset + self.CHARACTER_COUNT) % self.CHARACTER_COUNT
+        char_index = self._backward_map[char_index] if backward else self._forward_map[char_index]
+        char_index = (char_index + self._ring_setting - self._offset + self.CHARACTER_COUNT) % self.CHARACTER_COUNT
+        return CHARACTERS[char_index]
+
+    def apply_forward(self, char: str) -> str:
+        return self._apply(char, backward=False)
+
+    def apply_backward(self, char: str) -> str:
+        return self._apply(char, backward=True)
 
 
 @dataclass
@@ -86,96 +149,3 @@ class RotorSetConfig:
 
     def __len__(self):
         return len(self._rotor_configs)
-
-
-class Rotor_:
-    _position = None
-
-    @property
-    def position(self):
-        return self._position
-
-    @position.setter
-    def position(self, value):
-        value = LETTERS.index(value)
-        assert 25 >= value >= 0
-        self._position = value
-
-    @property
-    def ring_position(self):
-        return LETTERS[(self.position + self.ring_setting) % 26]
-
-    @property
-    def ring_setting(self):
-        return self._ring_setting
-
-    @ring_setting.setter
-    def ring_setting(self, value):
-        value = LETTERS.index(value)
-        assert 25 >= value >= 0
-        self._ring_setting = value
-
-    @property
-    def rotate_next_trigger_position(self):
-        return (self._rotate_next_trigger_position - self.ring_setting) % 26
-
-    @property
-    def connections(self):
-        return self._connections
-
-    @property
-    def rotate_next(self):
-        # adjusted_rotation_position = (self.rotate_next_trigger_position + self.ring_setting) % 26
-        return self.position == self.rotate_next_trigger_position
-
-    def __init__(self, rotor_wiring, step_trigger, ring_setting):
-        # check rotor number
-
-        self.number = 0
-        for i in range(len(ROTORS)):
-            if rotor_wiring == ROTORS[i].rotor_wiring:
-                self.number = i + 1
-
-        # set up rotor wiring connections
-        self._connections = {LETTERS[i]: rotor_wiring[i] for i in range(len(LETTERS))}
-        self._connections_reversed = {value: key for key, value in self._connections.items()}
-
-        # set up position that triggers the rotation of another rotor
-        self._rotate_next_trigger_position = LETTERS.index(step_trigger)
-        self.ring_setting = ring_setting
-
-        # set initial postion
-        self.set_ring_position('A')
-
-    def __repr__(self):
-        return f'rotor {self.number}'
-
-    def set_ring_position(self, pos):
-        assert pos in LETTERS
-        self._position = (LETTERS.index(pos) - self.ring_setting) % 26
-
-    def scramble(self, letter, reverse=False):
-        assert letter in LETTERS
-        assert len(letter) == 1
-
-        # Account for shifted position
-        pos_index = (LETTERS.index(letter) + self.position) % 26
-
-        letter = LETTERS[pos_index]
-        if not reverse:
-            # get scrambled letter
-            scrambled_letter = self._connections[letter]
-        else:
-            # get scrambled letter
-            scrambled_letter = self._connections_reversed[letter]
-
-        # Account for shifted position again
-        pos_index = (LETTERS.index(scrambled_letter) - self.position) % 26
-
-        return LETTERS[pos_index]
-        # return scrambled_letter
-
-    def rotate(self):
-        self._position += 1
-        if self._position > 25:
-            self._position = 0

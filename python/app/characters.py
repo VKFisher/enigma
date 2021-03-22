@@ -1,6 +1,6 @@
 import re
 
-from settings import LETTERS
+CHARACTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
 
 def prep_chars(string: str) -> str:
@@ -8,4 +8,4 @@ def prep_chars(string: str) -> str:
 
 
 def char_valid(char: str) -> bool:
-    return len(char) == 1 and char in LETTERS
+    return len(char) == 1 and char in CHARACTERS

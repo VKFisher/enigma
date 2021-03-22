@@ -1,24 +1,12 @@
 # An implementation of the Enigma encryption machine
 
-import logging
-
 from components.plugboard import Plugboard
 from components.reflector import Reflector
 from components.rotor import RotorSet, RotorSetConfig
-from validation import prep_chars, char_valid
-
-logging.basicConfig(level=logging.DEBUG, format=' %(asctime)s - %(levelname)s - %(message)s')
-logging.disable(logging.DEBUG)
-
-logger = logging.getLogger('enigma')
+from characters import prep_chars, char_valid
 
 
-class EnigmaMachine:
-    _rotors = None
-    _initial_rotor_positions = None
-    _plugboard = {}
-    _reflector = None
-
+class Enigma:
     def __init__(
             self,
             rotors: RotorSet,
@@ -27,10 +15,10 @@ class EnigmaMachine:
     ):
         self._plugboard = plugboard
         self._reflector = reflector
-        self._rotors = rotors
+        self.rotors = rotors
 
     def configure_rotors(self, config: RotorSetConfig):
-        for rotor, settings in zip(self._rotors, config):
+        for rotor, settings in zip(self.rotors, config):
             rotor.ring_setting = settings.ring_setting
             rotor.position = settings.position
 
@@ -44,39 +32,31 @@ class EnigmaMachine:
     encrypt_message = decrypt_message = _process_message
 
     def _apply_rotors_forward(self, char: str) -> str:
-        for rotor in self._rotors[::-1]:
+        for rotor in self.rotors[::-1]:
             char = rotor.apply_forward(char)
 
         return char
 
     def _apply_rotors_backward(self, char: str) -> str:
-        for rotor in self._rotors:
+        for rotor in self.rotors:
             char = rotor.apply_backward(char)
 
         return char
 
     def _step_rotors(self):
-        count = 0
-        for rotor in self._rotors[::-1]:
-            count += 1
-            rotor.step()
+        step_first = self.rotors.second.in_turnover_position
+        step_second = self.rotors.third.in_turnover_position or self.rotors.second.in_turnover_position
 
-            logging.debug(f'Rotated rotor #{count}')
+        if step_first:
+            self.rotors.first.step()
 
-            # double step handlng
-            # if rotor #2 was rotated into its turnover position on the previous iteration
-            # this time it will rotate again independend of rotor #3
-            rotor_is_second = rotor == self._rotors[2]
-            double_step_trigger = self._rotors[1].position - self._rotors[1].rotate_next_trigger_position == -1
+        if step_second:
+            self.rotors.second.step()
 
-            if not (rotor.rotate_next or rotor_is_second and double_step_trigger):
-                break
-
-        logging.debug(f'Rotor ring positions after rotation: '
-                      f'{"".join([rotor.ring_position for rotor in self._rotors])}')
+        self.rotors.third.step()
 
     def _process_char(self, char: str) -> str:
-        # rotate rotors
+        # step rotors
         self._step_rotors()
 
         # apply encryption steps
