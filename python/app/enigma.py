@@ -1,5 +1,7 @@
 # An implementation of the Enigma encryption machine
 
+from funcy import compose, rcompose
+
 from components.plugboard import Plugboard
 from components.reflector import Reflector
 from components.rotor import RotorSet, RotorSetConfig
@@ -32,16 +34,12 @@ class Enigma:
     encrypt_message = decrypt_message = _process_message
 
     def _apply_rotors_forward(self, char: str) -> str:
-        for rotor in self.rotors[::-1]:
-            char = rotor.apply_forward(char)
-
-        return char
+        f = compose(*[rotor.apply_forward for rotor in self.rotors])
+        return f(char)
 
     def _apply_rotors_backward(self, char: str) -> str:
-        for rotor in self.rotors:
-            char = rotor.apply_backward(char)
-
-        return char
+        f = rcompose(*[rotor.apply_backward for rotor in self.rotors])
+        return f(char)
 
     def _step_rotors(self):
         step_first = self.rotors.second.in_turnover_position
@@ -60,10 +58,12 @@ class Enigma:
         self._step_rotors()
 
         # apply encryption steps
-        char = self._plugboard.apply(char)
-        char = self._apply_rotors_forward(char)
-        char = self._reflector.apply(char)
-        char = self._apply_rotors_backward(char)
-        char = self._plugboard.apply(char)
+        f = rcompose(*[
+            self._plugboard.apply,
+            self._apply_rotors_forward,
+            self._reflector.apply,
+            self._apply_rotors_backward,
+            self._plugboard.apply,
+        ])
 
-        return char
+        return f(char)
