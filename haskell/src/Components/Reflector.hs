@@ -2,9 +2,9 @@ module Components.Reflector where
 
 import Enigma (EnigmaMonad)
 import Exceptions (EnigmaException (..))
+import ValidCharacters (ValidChar)
 
-import ValidCharacters
+type Reflector = [(ValidChar, ValidChar)]
 
-type Reflector = [ValidChar]
-
-reflector :: [Char] -> Reflector
+--reflector :: String -> Reflector
+--historicReflectorB
