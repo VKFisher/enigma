@@ -1,4 +1,9 @@
-module ValidCharacters where
+module ValidCharacters (
+  ValidChar ()
+  , validChar
+  , toChar
+  , baseCharacterList
+) where
 
 import Data.Char (toUpper)
 import Enigma (EnigmaMonad)
@@ -7,10 +12,13 @@ import Exceptions (EnigmaException (..))
 validCharacterList :: [Char]
 validCharacterList = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
+baseCharacterList :: [ValidChar]
+baseCharacterList = ValidChar <$> validCharacterList
+
 newtype ValidChar = ValidChar Char deriving (Eq, Show, Ord)
 
-toValidChar :: Char -> EnigmaMonad ValidChar
-toValidChar c
+validChar :: Char -> EnigmaMonad ValidChar
+validChar c
   | uc `elem` validCharacterList = Right $ ValidChar uc
   | otherwise = Left $ InvalidChar c
   where
@@ -19,5 +27,3 @@ toValidChar c
 toChar :: ValidChar -> Char
 toChar (ValidChar c) = c
 
-toValidCharString :: String -> EnigmaMonad [ValidChar]
-toValidCharString = traverse toValidChar
