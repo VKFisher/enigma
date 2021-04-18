@@ -1,6 +1,6 @@
 import re
 
-CHARACTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+CHARACTERS: str = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
 
 def prep_chars(string: str) -> str:

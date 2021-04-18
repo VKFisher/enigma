@@ -1,4 +1,5 @@
 from collections import Counter
+from typing import Dict
 
 from exceptions import PlugboardException
 from characters import char_valid, prep_chars, CHARACTERS
@@ -11,7 +12,7 @@ class Plugboard:
         self._swap_map = self._parse_wiring(wiring)
 
     @staticmethod
-    def _parse_wiring(settings):
+    def _parse_wiring(settings: str) -> Dict[str, str]:
         pair_strings = [prep_chars(pair_string) for pair_string in settings.split()]
 
         if invalid_chars := {
@@ -56,7 +57,7 @@ class Plugboard:
 
         return swap_map
 
-    def apply(self, char: str):
+    def apply(self, char: str) -> str:
         if char not in self._swap_map:
             raise PlugboardException(f'Invalid character: {char}')
 
