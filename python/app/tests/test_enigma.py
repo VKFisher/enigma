@@ -4,7 +4,7 @@ from components.rotor import RotorSet, RotorConfig, RotorSetConfig
 from components.plugboard import Plugboard
 
 
-def test_message_is_decrypted():
+def test_message_is_decrypted() -> None:
     # Arrange
     enigma = Enigma(
         rotors=RotorSet(
@@ -34,7 +34,7 @@ def test_message_is_decrypted():
     assert actual_output == expected_output
 
 
-def test_double_step_is_applied():
+def test_double_step_is_applied() -> None:
     # Arrange
     enigma = Enigma(
         rotors=RotorSet(

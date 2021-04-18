@@ -1,15 +1,16 @@
 from collections import Counter
+from typing import Dict
 
 from exceptions import ReflectorException
 from characters import prep_chars, char_valid, CHARACTERS
 
 
 class Reflector:
-    def __init__(self, wiring):
+    def __init__(self, wiring: str):
         self._swap_map = self._parse_wiring(wiring)
 
     @staticmethod
-    def _parse_wiring(wiring):
+    def _parse_wiring(wiring: str) -> Dict[str, str]:
         _wiring = prep_chars(wiring)
 
         if invalid_chars := {
@@ -36,7 +37,7 @@ class Reflector:
 
         return swap_map
 
-    def apply(self, char: str):
+    def apply(self, char: str) -> str:
         if char not in self._swap_map:
             raise ReflectorException(f'Invalid character: {char}')
 

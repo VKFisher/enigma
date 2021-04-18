@@ -1,6 +1,6 @@
 # An implementation of the Enigma encryption machine
 
-from funcy import compose, rcompose
+from funcy import compose, rcompose  # type: ignore
 
 from components.plugboard import Plugboard
 from components.reflector import Reflector
@@ -19,12 +19,12 @@ class Enigma:
         self._reflector = reflector
         self.rotors = rotors
 
-    def configure_rotors(self, config: RotorSetConfig):
+    def configure_rotors(self, config: RotorSetConfig) -> None:
         for rotor, settings in zip(self.rotors, config):
             rotor.ring_setting = settings.ring_setting
             rotor.position = settings.position
 
-    def _process_message(self, message):
+    def _process_message(self, message: str) -> str:
         return ''.join([
             self._process_char(char)
             for char in prep_chars(message)
@@ -35,13 +35,15 @@ class Enigma:
 
     def _apply_rotors_forward(self, char: str) -> str:
         f = compose(*[rotor.apply_forward for rotor in self.rotors])
-        return f(char)
+        processed_char: str = f(char)
+        return processed_char
 
     def _apply_rotors_backward(self, char: str) -> str:
         f = rcompose(*[rotor.apply_backward for rotor in self.rotors])
-        return f(char)
+        processed_char: str = f(char)
+        return processed_char
 
-    def _step_rotors(self):
+    def _step_rotors(self) -> None:
         step_first = self.rotors.second.in_turnover_position
         step_second = self.rotors.third.in_turnover_position or self.rotors.second.in_turnover_position
 
@@ -65,5 +67,6 @@ class Enigma:
             self._apply_rotors_backward,
             self._plugboard.apply,
         ])
+        processed_char: str = f(char)
 
-        return f(char)
+        return processed_char
