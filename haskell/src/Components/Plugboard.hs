@@ -1,15 +1,16 @@
-module Components.Plugboard (
-  plugboard
-  , applyPlugboard
-) where
+module Components.Plugboard
+  ( plugboard,
+    applyPlugboard,
+  )
+where
 
+import Characters (ValidChar, validateChar)
 import Common (getDuplicates)
 import Control.Monad (liftM2, unless)
 import Control.Monad.Cont (when)
 import Data.Bifunctor (bimap)
 import Enigma (EnigmaMonad)
 import Exceptions (EnigmaException (..))
-import ValidCharacters
 
 type Plugboard = [(ValidChar, ValidChar)]
 
@@ -21,7 +22,7 @@ valdiateCharPair :: (Char, Char) -> EnigmaMonad (ValidChar, ValidChar)
 valdiateCharPair (c1, c2) = do
   vc1 <- validChar c1
   vc2 <- validChar c2
-  when (vc1 == vc2) (Left . IdenticalCharsPair . toChar $ vc1)
+  when (vc1 == vc2) (Left . IdenticalCharsInPair $ vc1)
   return (vc1, vc2)
 
 sortCharPair :: (ValidChar, ValidChar) -> EnigmaMonad (ValidChar, ValidChar)
@@ -38,7 +39,7 @@ plugboard s = charPairSetFromString s >>= validateCharPairSet
       let pairCount = length charPairs
       when (pairCount > 10) (Left . ExcessPlugboardPairCount $ pairCount)
       let duplicates = getDuplicates charPairs
-      unless (null duplicates) (Left . DuplicatePlugboardPairs $ (bimap toChar toChar <$> duplicates))
+      unless (null duplicates) (Left . DuplicatePlugboardPairs $ duplicates)
       return charPairs
 
 applyPlugboard' :: Plugboard -> ValidChar -> ValidChar

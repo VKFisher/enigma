@@ -2,16 +2,16 @@
 
 module Components.PlugboardSpec where
 
+import Characters (ValidChar, fromChar, fromValidChar)
 import Components.Plugboard
 import Control.Monad (liftM)
 import Enigma (EnigmaMonad)
 import Exceptions (EnigmaException (..))
 import Test.Framework
-import ValidCharacters (ValidChar, toChar, validChar)
 
 unpackPairList :: EnigmaMonad [(ValidChar, ValidChar)] -> EnigmaMonad [(Char, Char)]
 unpackPairList =
-  let unpack ((vc1, vc2) : ps) = (toChar vc1, toChar vc2) : unpack ps
+  let unpack ((vc1, vc2) : ps) = (fromValidChar vc1, fromValidChar vc2) : unpack ps
       unpack [] = []
    in liftM unpack
 
@@ -54,7 +54,7 @@ test_plugboardWithRepeatingPairsIsRejected = assertEqual expected actual
 test_plugboardWithIdenticalCharacterPairsIsRejected :: IO ()
 test_plugboardWithIdenticalCharacterPairsIsRejected = assertEqual expected actual
   where
-    expected = Left . IdenticalCharsPair $ 'A'
+    expected = Left . IdenticalCharsInPair $ 'A'
     actual = plugboard "AB CD AA GH IJ"
 
 test_plugboardIsAppliedCorrectly :: IO ()
@@ -64,4 +64,4 @@ test_plugboardIsAppliedCorrectly = assertEqual expected actual
     inputs = "ABFGK"
     outputs = "BAEGK"
     expected = Right <$> outputs
-    actual = liftM toChar . applyPlugboard (plugboard pgSettings) . validChar <$> inputs
+    actual = liftM fromValidChar . applyPlugboard (plugboard pgSettings) . fromChar <$> inputs
