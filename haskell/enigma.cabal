@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e721f83e65bccc4b09cab6eb42c57d17c9f9e5cc0e49702c72269206279933bb
+-- hash: f5713918c2a9c407d4c7e3382212201179b3caf9520a1af54daf6817b802c7b1
 
 name:           enigma
 version:        0.1.0.0
@@ -28,13 +28,14 @@ source-repository head
 library
   exposed-modules:
       Common
+      Components.Historic
       Components.Plugboard
       Components.Reflector
       Components.Rotor
       Enigma
       Exceptions
       Lib
-      ValidCharacters
+      Characters
   other-modules:
       Paths_enigma
   hs-source-dirs:
